@@ -1,5 +1,8 @@
-﻿using Microsoft.Owin;
+﻿using IssueTracker.Migrations;
+using IssueTracker.Models;
+using Microsoft.Owin;
 using Owin;
+using System.Data.Entity;
 
 [assembly: OwinStartupAttribute(typeof(IssueTracker.Startup))]
 namespace IssueTracker
@@ -9,6 +12,7 @@ namespace IssueTracker
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<AppDbContext, Configuration>());
         }
     }
 }
