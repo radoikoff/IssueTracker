@@ -18,7 +18,5 @@ namespace IssueTracker.Models
         {
             return new AppDbContext();
         }
-
-       // public System.Data.Entity.DbSet<IssueTracker.Models.ApplicationUser> ApplicationUsers { get; set; }
     }
 }
