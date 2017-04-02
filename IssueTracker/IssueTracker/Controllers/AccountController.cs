@@ -158,8 +158,18 @@ namespace IssueTracker.Controllers
                     FullName = model.FullName
                 };
                 var result = await UserManager.CreateAsync(user, model.Password);
+
                 if (result.Succeeded)
                 {
+                    using (var db = new AppDbContext()) //add each user to EndUser group
+                    {
+                        var userId = db.Users.FirstOrDefault(u => u.Email.Equals(user.Email)).Id; 
+                        var resultNew = this.UserManager.AddToRole(userId, "EndUser");
+                        if (!resultNew.Succeeded)
+                        {
+                            return View("Error");
+                        }
+                    }
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
