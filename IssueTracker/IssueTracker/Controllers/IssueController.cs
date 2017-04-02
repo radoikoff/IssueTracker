@@ -31,7 +31,32 @@ namespace IssueTracker.Controllers
             }
         }
 
+        //get details
+        public ActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var issue = db.Issues
+                    .Where(i => i.Id == id)
+                    .Include(i => i.Author)
+                    .Include(i => i.State)
+                    .First();
+
+                if (issue == null)
+                {
+                    return HttpNotFound();
+                }
+                return View(issue);
+            }
+        }
+
         //Get Create
+        [Authorize]
         public ActionResult Create()
         {
             return View();
@@ -56,8 +81,8 @@ namespace IssueTracker.Controllers
             return RedirectToAction("List");
         }
 
-
         //get Edit
+        [Authorize]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -69,6 +94,11 @@ namespace IssueTracker.Controllers
             {
                 var issue = db.Issues.FirstOrDefault(i => i.Id == id);
 
+                if (!this.IsUserAutorized(issue))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                }
+
                 if (issue == null)
                 {
                     return HttpNotFound();
@@ -77,6 +107,7 @@ namespace IssueTracker.Controllers
             }
         }
 
+        //post Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(Issue issue)
@@ -95,6 +126,7 @@ namespace IssueTracker.Controllers
         }
 
         //get Delete
+        [Authorize]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -106,6 +138,11 @@ namespace IssueTracker.Controllers
             {
                 var issue = db.Issues.FirstOrDefault(i => i.Id == id);
 
+                if (!this.IsUserAutorized(issue))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                }
+
                 if (issue == null)
                 {
                     return HttpNotFound();
@@ -114,6 +151,7 @@ namespace IssueTracker.Controllers
             }
         }
 
+        //post Delete
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
@@ -137,6 +175,14 @@ namespace IssueTracker.Controllers
 
                 return RedirectToAction("List");
             }
+        }
+
+        private bool IsUserAutorized(Issue issue)
+        {
+            bool isAuthor = issue.Author.UserName.Equals(User.Identity.Name);
+            bool isAdmin = User.IsInRole("Admin");
+
+            return isAuthor || isAdmin;
         }
     }
 }

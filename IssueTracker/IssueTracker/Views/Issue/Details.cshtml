@@ -1,0 +1,31 @@
+﻿@model IssueTracker.Models.Issue
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<div class="container">
+    <article>
+        <header>
+            <h2>
+                @Model.Title
+            </h2>
+        </header>
+        
+            <p>@Model.Id</p>
+            <p>@Model.State.State</p>
+            <p>@Model.Title</p>
+            <p>@Model.Author.FullName</p>
+            <p>@Model.SubmissionDate</p>
+       
+        <footer class="pull-right">
+            @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
+            {
+                @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs" })
+                @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs" })
+            }
+            
+            @Html.ActionLink("Back", "Index", "Issue", null, new { @class = "btn btn-default btn-xs" })
+        </footer>
+    </article>
+</div>
