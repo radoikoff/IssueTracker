@@ -6,7 +6,7 @@ using System.Web;
 
 namespace IssueTracker.Models
 {
-    public class UserViewModel
+    public class EditUserViewModel
     {
         [Required]
         [EmailAddress]
@@ -26,5 +26,13 @@ namespace IssueTracker.Models
         public List<Role> Roles { get; set; }
 
 
+    }
+
+    public class ListUserViewModel
+    {
+        public string Id { get; set; }
+        public string UserName { get; set; }
+        public string FullName { get; set; }
+        public List<Role> Roles { get; set; }
     }
 }

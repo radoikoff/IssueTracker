@@ -24,11 +24,24 @@ namespace IssueTracker.Controllers
         {
             using (var db = new AppDbContext())
             {
+                List<ListUserViewModel> usersViewModel = new List<ListUserViewModel>();
+
                 var users = db.Users.ToList();
 
-                ViewBag.Admins = GetAdmins(db);
+                foreach (var user in users)
+                {
+                    var model = new ListUserViewModel();
+                    model.Id = user.Id;
+                    model.UserName = user.Email;
+                    model.FullName = user.FullName;
+                    model.Roles = GetUserRoles(user, db);
 
-                return View(users);
+                    usersViewModel.Add(model);
+                }
+         
+                ViewBag.Admins = GetAdmins(db);
+                
+                return View(usersViewModel);
             }
         }
 
@@ -48,7 +61,7 @@ namespace IssueTracker.Controllers
                     return HttpNotFound();
                 }
 
-                var model = new UserViewModel();
+                var model = new EditUserViewModel();
                 model.Email = user.Email;
                 model.FullName = user.FullName;
                 model.Roles = GetUserRoles(user, db);

@@ -1,17 +1,26 @@
-﻿@model List<IssueTracker.Models.ApplicationUser>
+﻿@model List<IssueTracker.Models.ListUserViewModel>
 @{
     ViewBag.Title = "List";
 }
 
 <div class=container>
-    <h2>User List</h2>
+    <h2>Users List</h2>
 
     <table class="table table-striped table-hover">
         <thead>
             <tr>
+                <th colspan="3">User Data</th>
+                <th colspan="3">User Groups</th>
+                <th></th>
+            </tr>
+            <tr>
                 <th>Id</th>
                 <th>User Name</th>
                 <th>Full Name</th>
+                @foreach (var role in Model.FirstOrDefault().Roles)
+                {
+                    <th>@role.Name</th>
+                } 
                 <th>Actions</th>
             </tr>
         </thead>
@@ -30,6 +39,18 @@
                     <td>@user.Id</td>
                     <td>@user.UserName</td>
                     <td>@user.FullName</td>
+                foreach (var role in user.Roles)
+                {
+                    if (role.IsSelected)
+                    {
+                        <td>&#10004;</td>
+                    }
+                    else
+                    {
+                        <td>&#10005;</td>
+                    }
+            
+            }
                     <td>
                         @Html.ActionLink("Edit", "Edit", "User", new { @id = user.Id}, null)
                         @Html.ActionLink("Delete", "Delete", "User", new { @id = user.Id }, null)
