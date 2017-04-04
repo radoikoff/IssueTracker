@@ -3,6 +3,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -38,9 +39,9 @@ namespace IssueTracker.Controllers
 
                     usersViewModel.Add(model);
                 }
-         
+
                 ViewBag.Admins = GetAdmins(db);
-                
+
                 return View(usersViewModel);
             }
         }
@@ -68,8 +69,103 @@ namespace IssueTracker.Controllers
 
                 return View(model);
             }
+        }
 
-            
+        //post Edit
+        [HttpPost]
+        public ActionResult Edit(string id, EditUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var user = db.Users.FirstOrDefault(u => u.Id.Equals(id));
+
+                    if (user == null)
+                    {
+                        return HttpNotFound();
+                    }
+                    user.Email = model.Email;
+                    user.FullName = model.FullName;
+                    user.UserName = model.Email;
+
+                    if (!string.IsNullOrEmpty(model.Password))
+                    {
+                        var passwordHasher = new PasswordHasher();
+                        var newPasswordHash = passwordHasher.HashPassword(model.Password);
+                        user.PasswordHash = newPasswordHash;
+                    }
+
+                    SetUserRoles(user, db, model);
+                    db.Entry(user).State = EntityState.Modified;
+                    db.SaveChanges();
+                }
+
+                return RedirectToAction("List");
+            }
+
+            return View(model);
+        }
+
+        //get Delete
+        public ActionResult Delete(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.Id.Equals(id));
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+
+                return View(user);
+            }
+        }
+
+        //post Delete
+        [HttpPost]
+        [ActionName("Delete")]
+        public ActionResult DeleteConfirmed(string id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.Id.Equals(id));
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+
+                db.Users.Remove(user);
+                db.SaveChanges();
+                return RedirectToAction("List");
+            }
+        }
+
+        private void SetUserRoles(ApplicationUser user, AppDbContext db, EditUserViewModel model)
+        {
+            var userManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
+
+            foreach (var role in model.Roles)
+            {
+                if (role.IsSelected)
+                {
+                    userManager.AddToRole(user.Id, role.Name);
+                }
+                else if (!role.IsSelected)
+                {
+                    userManager.RemoveFromRole(user.Id, role.Name);
+                }
+            }
         }
 
         private List<Role> GetUserRoles(ApplicationUser user, AppDbContext db)
