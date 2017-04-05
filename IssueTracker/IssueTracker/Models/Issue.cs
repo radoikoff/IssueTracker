@@ -9,6 +9,13 @@ namespace IssueTracker.Models
 {
     public class Issue
     {
+        private ICollection<Comment> comments;
+
+        public Issue()
+        {
+            comments = new HashSet<Comment>();
+        }
+
         [Key]
         public int Id { get; set; }
 
@@ -29,7 +36,14 @@ namespace IssueTracker.Models
 
         public virtual ApplicationUser Author { get; set; }
 
+        [Required]
         public DateTime SubmissionDate { get; set; }
+
+        public virtual ICollection<Comment> Comments
+        {
+            get { return this.comments; }
+            set { this.comments = value; }
+        }
 
 
     }

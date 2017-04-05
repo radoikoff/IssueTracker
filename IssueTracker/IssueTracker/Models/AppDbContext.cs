@@ -14,6 +14,8 @@ namespace IssueTracker.Models
 
         public virtual IDbSet<Issue> Issues { get; set; }
 
+        public virtual IDbSet<Comment> Comments { get; set; }
+
         public static AppDbContext Create()
         {
             return new AppDbContext();
