@@ -10,7 +10,7 @@ namespace IssueTracker.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            return RedirectToAction("List", "Issue");
         }
 
         public ActionResult About()

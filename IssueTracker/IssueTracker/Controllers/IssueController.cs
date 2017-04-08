@@ -18,16 +18,67 @@ namespace IssueTracker.Controllers
         }
 
         //Get List
-        public ActionResult List()
+        public ActionResult List(int? id)
         {
             using (var db = new AppDbContext())
             {
-                var issues = db.Issues
+                List<Issue> dbIssues;
+
+                if (id == null || id == 0)
+                {
+                    dbIssues = db.Issues
                             .Include(i => i.Author)
                             .Include(i => i.State)
                             .ToList();
+                }
+                else if (id>=1 && id <= db.IssueStates.Count())
+                {
+                    dbIssues = db.Issues
+                            .Include(i => i.Author)
+                            .Include(i => i.State)
+                            .Where(i => i.StateId == id)
+                            .ToList();
+                }
+                else
+                {
+                    return HttpNotFound();
+                }
 
-                return View(issues);
+                var issues = new List<IssueSimpleModel>();
+
+                foreach (var dbIssue in dbIssues)
+                {
+                    var issue = new IssueSimpleModel();
+
+                    issue.Id = dbIssue.Id;
+                    issue.AuthorFullName = dbIssue.Author.FullName;
+                    issue.Title = dbIssue.Title;
+                    issue.SubmissionDate = dbIssue.SubmissionDate;
+                    issue.StateName = dbIssue.State.State;
+                    issue.CommentsCount = dbIssue.Comments.Count();
+
+                    issues.Add(issue);
+                }
+
+                var issueStates = new List<IssueStateSimpleModel>();
+
+                var dbIssueStates = db.IssueStates.ToList();
+                foreach (var dbIssueState in dbIssueStates)
+                {
+                    var state = new IssueStateSimpleModel();
+                    state.Id = dbIssueState.Id;
+                    state.StateName = dbIssueState.State;
+                    state.IssuesCount = dbIssueState.Issues.Count();
+
+                    issueStates.Add(state);
+                }
+
+                var model = new IssueListViewModel();
+                model.Issues = issues;
+                model.IssueStates = issueStates;
+                model.TotalIssueCount = db.Issues.Count();
+
+                return View(model);
             }
         }
 
@@ -46,7 +97,7 @@ namespace IssueTracker.Controllers
                     .Include(i => i.Author)
                     .Include(i => i.State)
                     .Include(i => i.Comments)
-                    .Include(i =>i.Comments.Select(c => c.Author))
+                    .Include(i => i.Comments.Select(c => c.Author))
                     .First();
 
                 if (issue == null)
@@ -157,7 +208,7 @@ namespace IssueTracker.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
-        public ActionResult DeletePOST (int? id)
+        public ActionResult DeletePOST(int? id)
         {
             if (id == null)
             {

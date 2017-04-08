@@ -1,38 +1,55 @@
-﻿@model List<IssueTracker.Models.Issue>
+﻿@model IssueTracker.Models.IssueListViewModel
 
-@{
-    ViewBag.Title = "List";
-}
+<h2>Issue List</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-md-10">
+            <table class="table table-striped table-bordered table-hover">
+                <tr>
+                    <th>ID</th>
+                    <th>State</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Submitted on</th>
+                    <th>Comments</th>
+                </tr>
+                @foreach (var issue in Model.Issues)
+                {
+                    <tr>
+                        <td>@issue.Id</td>
+                        <td>@issue.StateName</td>
+                        <td>@Html.ActionLink(@issue.Title, "Details", "Issue", new { @id = @issue.Id }, null)</td>
+                        <td>@issue.AuthorFullName</td>
+                        <td>@issue.SubmissionDate</td>
+                        <td>@issue.CommentsCount</td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="col-md-2 well text-center text">
 
-<h2>Issues</h2>
-<div class="container" >
-    <table class="table table-striped">
-        <tr>
-            <th>ID</th>
-            <th>State</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Submitted on</th>
-            <th></th>
-        </tr>
-        @foreach (var issue in Model)
-        {
-            <tr>
-                <td>@issue.Id</td>
-                <td>@issue.State.State</td>
-                <td>@issue.Title</td>
-                <td>@issue.Author.FullName</td>
-                <td>@issue.SubmissionDate</td>
-                <td>@Html.ActionLink("Details","Details","Issue", new { @id = @issue.Id}, new { @class = "btn-xs"})</td>
-            </tr>
-        }
-    </table>
+            <h3>Issue States</h3>
+            <ul class="text-left">
+                @foreach (var state in Model.IssueStates)
+                {
+                    <li>
+                        @Html.ActionLink(@state.StateName, "List", "Issue", new { @id = @state.Id }, null)
+                        <span class="badge">@state.IssuesCount</span>
+                    </li>
+                }
+            </ul>
+            <ul class="text-left">
+                <li>
+                    @Html.ActionLink("Total", "List", "Issue", new { @id = 0 }, null)
+                    <span class="badge">@Model.TotalIssueCount</span>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+
 
 
 </div>
-     
-     
-     
-     
- 
+
 
