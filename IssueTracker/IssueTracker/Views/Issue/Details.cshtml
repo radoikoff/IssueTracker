@@ -7,25 +7,77 @@
 <div class="container">
     <article>
         <header>
-            <h2>
-                @Model.Title
-            </h2>
+            <h2>Issue Details</h2>
         </header>
+
+        <hr />
+
+        <div class="row">
+            <div class="col-md-1">
+                @Html.ActionLink(@Model.State.State, "List", "Issue", null, new { @class = "btn btn-success" })
+            </div>
+            <div class="col-md-7">
+                <h3 class="h3-special">@Model.Title<span style="color:lightgrey"> #@Model.Id</span></h3>
+            </div>
+
+            <div class="col-md-4">
+                <div class="pull-right">
+                    @if (User.IsInRole("Admin") || User.IsInRole("Reviewer") || Model.Author.UserName.Equals(User.Identity.Name))
+                    {
+                        @Html.ActionLink("Progress this Issue", "Progress", "Issue", new { @id = Model.Id }, new { @class = "btn btn-primary " })
+                    }
+                    @Html.ActionLink("Add Comment", "Create", "Comment", new { @id = Model.Id }, new { @class = "btn btn-default" })
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+
+                <strong>@Model.Author.FullName</strong><span> opened this issue on </span>@Model.SubmissionDate
+
+                @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
+                {
+                    <div class="btn-group pull-right">
+                        @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs" })
+                        @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs" })
+                    </div>
+                }
+            </div>
+            <div class="panel-body">
+                <p2>@Model.Description</p2>
+            </div>
+        </div>
+
+        <hr />
+
+        @foreach (var comment in Model.Comments)
+        {
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>@comment.Author.FullName</strong><span> commented on </span>@comment.CreatedDate
+                    @if (User.IsInRole("Admin") || comment.Author.UserName.Equals(User.Identity.Name))
+                    {
+                        <div class="btn-group pull-right">
+                            @Html.ActionLink("Edit", "Edit", "Comment", new { @id = comment.Id }, new { @class = "btn btn-success btn-xs" })
+                            @Html.ActionLink("Delete", "Delete", "Comment", new { @id = comment.Id }, new { @class = "btn btn-danger btn-xs" })
+                        </div>
+                    }
+                </div>
+                <div class="panel-body">
+                    <p2>@comment.Text</p2>
+                </div>
+            </div>
         
-            <p>@Model.Id</p>
-            <p>@Model.State.State</p>
-            <p>@Model.Title</p>
-            <p>@Model.Author.FullName</p>
-            <p>@Model.SubmissionDate</p>
-       
+        }
+
+
         <footer class="pull-right">
-            @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
-            {
-                @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs" })
-                @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs" })
-            }
-            
-            @Html.ActionLink("Back", "Index", "Issue", null, new { @class = "btn btn-default btn-xs" })
+            @Html.ActionLink("Open new Issue", "Create", "Issue", null, new { @class = "btn btn-default" })
+            @Html.ActionLink("Back to list", "Index", "Issue", null, new { @class = "btn btn-default" })
         </footer>
-    </article>
-</div>
+        </article>
+        </div>

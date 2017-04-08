@@ -45,6 +45,8 @@ namespace IssueTracker.Controllers
                     .Where(i => i.Id == id)
                     .Include(i => i.Author)
                     .Include(i => i.State)
+                    .Include(i => i.Comments)
+                    .Include(i =>i.Comments.Select(c => c.Author))
                     .First();
 
                 if (issue == null)

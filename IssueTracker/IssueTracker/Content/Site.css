@@ -22,3 +22,8 @@ select,
 textarea {
     max-width: 280px;
 }
+/*custom styling*/
+.h3-special{
+    margin-top: 0px; 
+    margin-bottom: 15px;
+}
