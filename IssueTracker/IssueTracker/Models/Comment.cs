@@ -26,6 +26,10 @@ namespace IssueTracker.Models
 
         public virtual ApplicationUser Author { get; set; }
 
+        [Required]
         public DateTime  CreatedDate { get; set; }
+
+        [Required]
+        public bool IsInternal { get; set; }
     }
 }

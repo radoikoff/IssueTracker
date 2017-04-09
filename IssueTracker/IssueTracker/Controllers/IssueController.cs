@@ -278,24 +278,29 @@ namespace IssueTracker.Controllers
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
-                    //create automatic comment
-                    var comment = new Comment();
-                    var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(this.User.Identity.Name)); //to do: chech if user is logged in
-                    comment.IssueId = model.IssueId;
-                    comment.AuthorId = currentUser.Id;
-                    comment.CreatedDate = DateTime.Now;
-                    comment.Text =$"{currentUser.FullName} move this issue to {issue.State.State} state on {comment.CreatedDate}";
+                    CreateInternalComment(model.IssueId, db);
 
-                    db.Comments.Add(comment);
-                    db.SaveChanges();
+                    model.IssueStates = db.IssueStates.ToList(); //in case Model State is not valid
 
-                    //update model in case MmodelState is not valid. The model does not have issue states list
-                    model.IssueStates = db.IssueStates.ToList(); //in case 
-
-                    return RedirectToAction("Details", "Issue", new { id = issue.Id });     
+                    return RedirectToAction("Details", "Issue", new { id = issue.Id });
                 }
-            } 
-             return View(model);
+            }
+            return View(model);
+        }
+
+        private void CreateInternalComment(int issueId, AppDbContext db)
+        {
+            var comment = new Comment();
+            var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(User.Identity.Name));
+
+            comment.IssueId = issueId;
+            comment.AuthorId = currentUser.Id;
+            comment.CreatedDate = DateTime.Now;
+            comment.IsInternal = true;
+            comment.Text = "Internal";
+
+            db.Comments.Add(comment);
+            db.SaveChanges();
         }
 
         private bool IsUserAutorized(Issue issue)
