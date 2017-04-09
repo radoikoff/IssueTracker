@@ -31,7 +31,7 @@ namespace IssueTracker.Controllers
                             .Include(i => i.State)
                             .ToList();
                 }
-                else if (id>=1 && id <= db.IssueStates.Count())
+                else if (id >= 1 && id <= db.IssueStates.Count())
                 {
                     dbIssues = db.Issues
                             .Include(i => i.Author)
@@ -228,6 +228,74 @@ namespace IssueTracker.Controllers
 
                 return RedirectToAction("List");
             }
+        }
+
+        //get Progress
+        [Authorize]
+        public ActionResult Progress(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var issue = db.Issues.FirstOrDefault(i => i.Id == id);
+
+                if (!this.IsUserAutorized(issue))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                }
+
+                if (issue == null)
+                {
+                    return HttpNotFound();
+                }
+
+                var model = new ProgressIssueViewModel();
+
+                model.IssueId = (int)id;
+                model.IssueStateId = issue.StateId;
+                model.IssueStates = db.IssueStates.ToList();
+
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Progress")]
+        public ActionResult ProgressConfirmed(ProgressIssueViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                using (var db = new AppDbContext())
+                {
+                    //update issue state
+                    var issue = db.Issues.FirstOrDefault(i => i.Id == model.IssueId);
+                    issue.StateId = model.IssueStateId;
+                    db.Entry(issue).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    //create automatic comment
+                    var comment = new Comment();
+                    var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(this.User.Identity.Name)); //to do: chech if user is logged in
+                    comment.IssueId = model.IssueId;
+                    comment.AuthorId = currentUser.Id;
+                    comment.CreatedDate = DateTime.Now;
+                    comment.Text =$"{currentUser.FullName} move this issue to {issue.State.State} state on {comment.CreatedDate}";
+
+                    db.Comments.Add(comment);
+                    db.SaveChanges();
+
+                    //update model in case MmodelState is not valid. The model does not have issue states list
+                    model.IssueStates = db.IssueStates.ToList(); //in case 
+
+                    return RedirectToAction("Details", "Issue", new { id = issue.Id });     
+                }
+            } 
+             return View(model);
         }
 
         private bool IsUserAutorized(Issue issue)

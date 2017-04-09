@@ -30,6 +30,7 @@ namespace IssueTracker.Models
         public int TotalIssueCount { get; set; }
     }
 
+
     public class IssueStateSimpleModel
     {
         public int Id { get; set; }
@@ -37,5 +38,15 @@ namespace IssueTracker.Models
         public string StateName { get; set; }
 
         public int IssuesCount { get; set; }
+    }
+
+
+    public class ProgressIssueViewModel
+    {
+        public int IssueId { get; set; }
+
+        public int IssueStateId { get; set; }
+
+        public List<IssueState> IssueStates { get; set; }
     }
 }

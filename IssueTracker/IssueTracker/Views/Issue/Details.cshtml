@@ -24,9 +24,9 @@
                 <div class="pull-right">
                     @if (User.IsInRole("Admin") || User.IsInRole("Reviewer") || Model.Author.UserName.Equals(User.Identity.Name))
                     {
-                        @Html.ActionLink("Progress this Issue", "Progress", "Issue", new { @id = Model.Id }, new { @class = "btn btn-primary " })
+                        @Html.ActionLink("Progress this Issue", "Progress", "Issue", new { @id = Model.Id }, new { @class = "btn btn-primary" })
                     }
-                    @Html.ActionLink("Add Comment", "Create", "Comment", new { @id = Model.Id }, new { @class = "btn btn-default" })
+                    @Html.ActionLink("Add Comment", "Create", "Comment", new { @id = Model.Id }, new { @class = "btn btn btn-primary" })
                 </div>
             </div>
         </div>
