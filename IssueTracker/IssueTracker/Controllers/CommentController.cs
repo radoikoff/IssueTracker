@@ -36,69 +36,83 @@ namespace IssueTracker.Controllers
             return View(comment);
         }
 
-        // GET: Comment/Create
-        public ActionResult Create()
+        // get Create
+        [Authorize]
+        public ActionResult Create(int? id)
         {
-            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FullName");
-            ViewBag.IssueId = new SelectList(db.Issues, "Id", "Title");
-            return View();
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var model = new Comment();
+            model.IssueId = (int)id;
+
+            return View(model);
         }
 
-        // POST: Comment/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // post Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Text,IssueId,AuthorId,CreatedDate")] Comment comment)
+        public ActionResult Create(Comment comment)
         {
             if (ModelState.IsValid)
             {
+                var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(this.User.Identity.Name)); //to do: chech if user is logged in
+
+                comment.AuthorId = currentUser.Id;
+                comment.CreatedDate = DateTime.Now;
+
                 db.Comments.Add(comment);
                 db.SaveChanges();
-                return RedirectToAction("Index");
-            }
 
-            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FullName", comment.AuthorId);
-            ViewBag.IssueId = new SelectList(db.Issues, "Id", "Title", comment.IssueId);
+                return RedirectToAction("Details", "Issue", new { id = comment.IssueId });
+            }
             return View(comment);
         }
 
-        // GET: Comment/Edit/5
+        // get Edit
+        [Authorize]
         public ActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Comment comment = db.Comments.Find(id);
+
+            var comment = db.Comments.FirstOrDefault(c => c.Id == id);
+
+            if (!this.IsUserAutorized(comment))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
             if (comment == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FullName", comment.AuthorId);
-            ViewBag.IssueId = new SelectList(db.Issues, "Id", "Title", comment.IssueId);
+
             return View(comment);
         }
 
-        // POST: Comment/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // post Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Text,IssueId,AuthorId,CreatedDate")] Comment comment)
+        public ActionResult Edit(Comment comment)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(comment).State = EntityState.Modified;
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return  RedirectToAction("Details", "Issue", new { id = comment.IssueId });
             }
-            ViewBag.AuthorId = new SelectList(db.Users, "Id", "FullName", comment.AuthorId);
-            ViewBag.IssueId = new SelectList(db.Issues, "Id", "Title", comment.IssueId);
+
             return View(comment);
         }
 
         // GET: Comment/Delete/5
+        [Authorize]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -131,6 +145,14 @@ namespace IssueTracker.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        private bool IsUserAutorized(Comment comment)
+        {
+            bool isAuthor = comment.Author.UserName.Equals(User.Identity.Name);
+            bool isAdmin = User.IsInRole("Admin");
+
+            return isAuthor || isAdmin;
         }
     }
 }
