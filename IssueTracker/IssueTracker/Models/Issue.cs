@@ -10,10 +10,12 @@ namespace IssueTracker.Models
     public class Issue
     {
         private ICollection<Comment> comments;
+        private ICollection<Tag> tags;
 
         public Issue()
         {
             comments = new HashSet<Comment>();
+            tags = new HashSet<Tag>();
         }
 
         [Key]
@@ -45,6 +47,11 @@ namespace IssueTracker.Models
             set { this.comments = value; }
         }
 
+        public virtual ICollection<Tag> Tags
+        {
+            get { return this.tags; }
+            set { this.tags = value; }
+        }
 
     }
 }

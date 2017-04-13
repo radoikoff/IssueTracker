@@ -33,6 +33,10 @@
             <div class="panel-heading">
 
                 <strong>@Model.Author.FullName</strong><span> opened this issue on </span>@Model.SubmissionDate
+                @foreach (var tag in Model.Tags)
+                {
+                    <span>@Html.ActionLink(tag.Name, "ListByTag", "Issue", new { @id = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
+                }
 
                 @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
                 {

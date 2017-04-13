@@ -18,6 +18,8 @@ namespace IssueTracker.Models
         public DateTime SubmissionDate { get; set; }
 
         public int CommentsCount { get; set; }
+
+        public List<Tag> Tags { get; set; }
     }
 
 

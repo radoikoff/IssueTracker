@@ -18,7 +18,13 @@
                     <tr>
                         <td>@issue.Id</td>
                         <td>@issue.StateName</td>
-                        <td>@Html.ActionLink(@issue.Title, "Details", "Issue", new { @id = @issue.Id }, null)</td>
+                        <td>
+                            @Html.ActionLink(@issue.Title, "Details", "Issue", new { @id = @issue.Id }, null)
+                            @foreach (var tag in issue.Tags)
+                            {
+                                <span>@Html.ActionLink(tag.Name, "ListByTag", "Issue", new { @id = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
+                            }
+                        </td>
                         <td>@issue.AuthorFullName</td>
                         <td>@issue.SubmissionDate</td>
                         <td>@issue.CommentsCount</td>
