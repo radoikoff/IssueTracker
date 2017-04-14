@@ -18,28 +18,30 @@ namespace IssueTracker.Controllers
         }
 
         //Get List
-        public ActionResult List(int? id)
+        public ActionResult List(int? stateId, int? tagId, string searchStr)
         {
+            List<Issue> dbIssues = null;
             using (var db = new AppDbContext())
             {
-                List<Issue> dbIssues;
-
-                if (id == null || id == 0)
+                if (stateId == null && tagId == null && searchStr == null)
                 {
                     dbIssues = db.Issues
                             .Include(i => i.Author)
                             .Include(i => i.State)
-                            .Include(i => i.Tags)
-                            .ToList();
+                            .Include(i => i.Tags).ToList();
                 }
-                else if (id >= 1 && id <= db.IssueStates.Count())
+                else if (stateId != null && stateId >= 1 && stateId <= db.IssueStates.Count())
                 {
-                    dbIssues = db.Issues
-                            .Include(i => i.Author)
-                            .Include(i => i.State)
-                            .Include(i => i.Tags)
-                            .Where(i => i.StateId == id)
-                            .ToList();
+                    dbIssues = db.Issues.Where(i => i.StateId == stateId).ToList();
+                }
+
+                else if (tagId != null && tagId >= 1 && tagId <= db.Tags.Count())
+                {
+                    dbIssues = db.Tags.Where(t => t.Id == tagId).Select(t => t.Issues).FirstOrDefault().ToList();
+                }
+                else if (searchStr != null)
+                {
+                    dbIssues = db.Issues.Where(i => i.Title.Contains(searchStr)).ToList();
                 }
                 else
                 {
