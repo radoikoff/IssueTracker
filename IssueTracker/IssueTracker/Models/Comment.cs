@@ -14,6 +14,7 @@ namespace IssueTracker.Models
 
         [Required]
         [MinLength(3)]
+        [Display(Name = "Comment Text")]
         public string Text { get; set; }
 
         [ForeignKey("Issue")]

@@ -1,16 +1,13 @@
 ﻿@model IssueTracker.Models.Comment
 
-<h2>Edit</h2>
+<h3>Edit comment <span>#@Model.Id</span> for issue <span>#@Model.IssueId</span></h3>
+<hr />
 
 @using (Html.BeginForm("Edit", "Comment", FormMethod.Post, new { @class = "form-horizontal" }))
 {
     @Html.AntiForgeryToken()
 
     <div class="form-horizontal">
-        <h4>Edit comment <span>#@Model.Id</span> for issue <span>#@Model.IssueId</span></h4>
-        <hr />
-
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
         <div class="form-group">
             @Html.LabelFor(m => m.Text, new { @class = "control-label col-md-2" })
