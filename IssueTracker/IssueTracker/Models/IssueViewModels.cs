@@ -31,6 +31,8 @@ namespace IssueTracker.Models
         public List<IssueStateSimpleModel> IssueStates { get; set; }
 
         public int TotalIssueCount { get; set; }
+
+        public string FilterMessage { get; set; }
     }
 
 

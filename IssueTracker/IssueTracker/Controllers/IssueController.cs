@@ -21,6 +21,8 @@ namespace IssueTracker.Controllers
         public ActionResult List(int? stateId, int? tagId, string searchStr)
         {
             List<Issue> dbIssues = null;
+            string filterMsg = null;
+            
             using (var db = new AppDbContext())
             {
                 if (stateId == null && tagId == null && searchStr == null)
@@ -33,15 +35,18 @@ namespace IssueTracker.Controllers
                 else if (stateId != null && stateId >= 1 && stateId <= db.IssueStates.Count())
                 {
                     dbIssues = db.Issues.Where(i => i.StateId == stateId).ToList();
+                    filterMsg = "Filtering by Issue State is active. Click to clear the filter";
                 }
 
                 else if (tagId != null && tagId >= 1 && tagId <= db.Tags.Count())
                 {
                     dbIssues = db.Tags.Where(t => t.Id == tagId).Select(t => t.Issues).FirstOrDefault().ToList();
+                    filterMsg = "Filtering by Tag is active. Click to clear the filter";
                 }
                 else if (searchStr != null)
                 {
                     dbIssues = db.Issues.Where(i => i.Title.Contains(searchStr)).ToList();
+                    filterMsg = "Filtering by Issue Title is active. Click to clear the filter";
                 }
                 else
                 {
@@ -82,6 +87,7 @@ namespace IssueTracker.Controllers
                 model.Issues = issues;
                 model.IssueStates = issueStates;
                 model.TotalIssueCount = db.Issues.Count();
+                model.FilterMessage = filterMsg;
 
                 return View(model);
             }
