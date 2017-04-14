@@ -29,7 +29,7 @@ namespace IssueTracker.Controllers
                     dbIssues = db.Issues
                             .Include(i => i.Author)
                             .Include(i => i.State)
-                            .Include(i=>i.Tags)
+                            .Include(i => i.Tags)
                             .ToList();
                 }
                 else if (id >= 1 && id <= db.IssueStates.Count())
@@ -116,26 +116,40 @@ namespace IssueTracker.Controllers
         [Authorize]
         public ActionResult Create()
         {
-            return View();
+            var model = new CreateIssueViewModel();
+            using (var db = new AppDbContext())
+            {
+                model.AssignedTags = GetIssueTags(null, db);
+            }
+            return View(model);
         }
 
         //Post: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Issue issue)
+        public ActionResult Create(CreateIssueViewModel model)
         {
-            using (var db = new AppDbContext())
+            if (ModelState.IsValid)
             {
-                var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(this.User.Identity.Name)); //to do: chech if user is logged in
-                var StateIdOfNew = db.IssueStates.FirstOrDefault(s => s.State.Equals("New")).Id;
+                using (var db = new AppDbContext())
+                {
+                    Issue issue = new Issue();
+                    string currentUserId = db.Users.FirstOrDefault(u => u.UserName.Equals(this.User.Identity.Name)).Id; //to do: chech if user is logged in
+                    int NewStateId = db.IssueStates.FirstOrDefault(s => s.State.Equals("New")).Id;
 
-                issue.StateId = StateIdOfNew; //New = id 1
-                issue.AuthorId = currentUser.Id;
-                issue.SubmissionDate = DateTime.Now;
-                db.Issues.Add(issue);
-                db.SaveChanges();
+                    issue.Title = model.Title;
+                    issue.Description = model.Description;
+                    issue.StateId = NewStateId; //New = id 1
+                    issue.AuthorId = currentUserId;
+                    issue.SubmissionDate = DateTime.Now;
+                    SetIssueTags(issue, db, model);
+
+                    db.Issues.Add(issue);
+                    db.SaveChanges();
+                }
+                return RedirectToAction("List");
             }
-            return RedirectToAction("List");
+            return View(model);
         }
 
         //get Edit
@@ -160,26 +174,38 @@ namespace IssueTracker.Controllers
                 {
                     return HttpNotFound();
                 }
-                return View(issue);
+
+                var model = new EditIssueViewModel();
+                model.Id = issue.Id;
+                model.Title = issue.Title;
+                model.Description = issue.Description;
+                model.AssignedTags = GetIssueTags(issue, db);
+
+                return View(model);
             }
         }
 
         //post Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(Issue issue)
+        public ActionResult Edit(EditIssueViewModel model)
         {
             if (ModelState.IsValid)
             {
                 using (var db = new AppDbContext())
                 {
+                    var issue = db.Issues.FirstOrDefault(i => i.Id == model.Id);
+                    issue.Title = model.Title;
+                    issue.Description = model.Description;
+                    SetIssueTags(issue, db, model);
+
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
                     return RedirectToAction("List");
                 }
             }
-            return View(issue);
+            return View(model);
         }
 
         //get Delete
@@ -193,7 +219,7 @@ namespace IssueTracker.Controllers
 
             using (var db = new AppDbContext())
             {
-                var issue = db.Issues.FirstOrDefault(i => i.Id == id);
+                var issue = db.Issues.Include(i => i.Tags).FirstOrDefault(i => i.Id == id);
 
                 if (!this.IsUserAutorized(issue))
                 {
@@ -313,6 +339,55 @@ namespace IssueTracker.Controllers
             bool isAdmin = User.IsInRole("Admin");
 
             return isAuthor || isAdmin;
+        }
+
+        private void SetIssueTags(Issue issue, AppDbContext db, CreateIssueViewModel model)
+        {
+            foreach (var tag in model.AssignedTags)
+            {
+                if (tag.IsSelected)
+                {
+                    Tag dbTag = db.Tags.FirstOrDefault(t => t.Id == tag.Id);
+                    issue.Tags.Add(dbTag);
+                }
+            }
+        }
+
+        private void SetIssueTags(Issue issue, AppDbContext db, EditIssueViewModel model)
+        {
+            issue.Tags.Clear();
+            foreach (var tag in model.AssignedTags)
+            {
+                if (tag.IsSelected)
+                {
+                    Tag dbTag = db.Tags.FirstOrDefault(t => t.Id == tag.Id);
+                    issue.Tags.Add(dbTag);
+                }
+            }
+        }
+
+        private List<AssignedTag> GetIssueTags(Issue issue, AppDbContext db)
+        {
+            List<AssignedTag> assignedTags = new List<AssignedTag>();
+            List<int> issueTagsIds = new List<int>();
+
+            if (issue != null)
+            {
+                issueTagsIds = issue.Tags.Select(t => t.Id).ToList();
+            }
+
+            foreach (var tag in db.Tags)
+            {
+                var assignedTag = new AssignedTag();
+                assignedTag.Id = tag.Id;
+                assignedTag.Name = tag.Name;
+                if (issueTagsIds.Contains(tag.Id))
+                {
+                    assignedTag.IsSelected = true;
+                }
+                assignedTags.Add(assignedTag);
+            }
+            return assignedTags;
         }
     }
 }

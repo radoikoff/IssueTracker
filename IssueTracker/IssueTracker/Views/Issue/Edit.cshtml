@@ -1,48 +1,48 @@
-﻿@model IssueTracker.Models.Issue
+﻿@model IssueTracker.Models.EditIssueViewModel
 
-@{
-    ViewBag.Title = "Edit";
-}
-
-<h2>Edit</h2>
-
-
+<h3>Edit Issue</h3>
+<hr />
 @using (Html.BeginForm("Edit", "Issue", FormMethod.Post, new { @class = "form-horizontal" }))
 {
     @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
 
-
-    <h4>Issue</h4>
-        <hr />
-
-        @Html.HiddenFor(m => m.AuthorId)
-        @Html.HiddenFor(m => m.StateId)
-        @Html.HiddenFor(m => m.SubmissionDate)
-
-        <div class="form-group">
-            @Html.LabelFor(m => m.Title, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
-                @*@Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })*@
-            </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Title, new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
         </div>
+    </div>
 
         <div class="form-group">
             @Html.LabelFor(m => m.Description, new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.TextAreaFor(m => m.Description, new { @class = "form-control", @rows = 4 })
-                @*@Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })*@
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="control-label col-md-2">
+                <strong>Tags</strong>
+            </div>
+            <div class="col-md-10">
+                @for (int i = 0; i < Model.AssignedTags.Count; i++)
+                {
+                    <div>
+                        @Html.HiddenFor(m => m.AssignedTags[i].Id)
+                        @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
+                        @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
+                    </div>
+                }
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Edit" class="btn btn-default" />
+                <input type="submit" value="Save Changes" class="btn btn-primary" />
+                @Html.ActionLink("Back to list", "List", "Issue", new { @class = "btn btn-default" })
             </div>
         </div>
-
 }
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
-</div>

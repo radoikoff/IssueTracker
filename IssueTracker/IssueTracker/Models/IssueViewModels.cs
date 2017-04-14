@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
@@ -50,5 +51,39 @@ namespace IssueTracker.Models
         public int IssueStateId { get; set; }
 
         public List<IssueState> IssueStates { get; set; }
+    }
+
+    public class CreateIssueViewModel
+    {
+        [Required]
+        [MinLength(3)]
+        public string Title { get; set; }
+
+        [Required]
+        public string Description { get; set; }
+
+        public List<AssignedTag> AssignedTags { get; set; }
+    }
+
+    public class EditIssueViewModel
+    {
+        [Required]
+        public int Id { get; set; }
+
+        [Required]
+        [MinLength(3)]
+        public string Title { get; set; }
+
+        [Required]
+        public string Description { get; set; }
+
+        public List<AssignedTag> AssignedTags { get; set; }
+    }
+
+    public class AssignedTag
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

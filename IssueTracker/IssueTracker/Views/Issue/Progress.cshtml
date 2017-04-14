@@ -1,23 +1,25 @@
 ﻿@model IssueTracker.Models.ProgressIssueViewModel
 
-<h2>Progress</h2>
-
+<h3>Progress Issue <span>#@Model.IssueId</span></h3>
+<hr />
 @using (Html.BeginForm("Progress", "Issue", FormMethod.Post, new { @class = "form-horizontal" }))
 {
     @Html.AntiForgeryToken()
 
-    <div class="form-horizontal">
-        <h4>Progress issue <span>#@Model.IssueId</span></h4>
-        <hr />
-
-        <div class="form-group">
+    @Html.HiddenFor(m => m.IssueId)
+    
+    <div class="form-group">
+        <div class="control-label col-md-2">
+            <strong>Issue States</strong>
+        </div>
+        <div class="col-md-10">
             @foreach (var state in Model.IssueStates)
-            {
-                if (state.Id >= Model.IssueStateId)
                 {
+                    if (state.Id >= Model.IssueStateId)
+                    {
                     <div>
                         @Html.RadioButtonFor(m => m.IssueStateId, state.Id, new { @id = @state.Id })
-                        @Html.Label(state.State, new { @for = @state.Id,  })
+                        @Html.Label(state.State, new { @for = @state.Id, })
                     </div>
                 }
                 else
@@ -29,7 +31,8 @@
                 }
             }
         </div>
-        @Html.HiddenFor(m => m.IssueId)
+    </div>
+
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
@@ -37,6 +40,5 @@
                 @Html.ActionLink("Back to details", "Details", "Issue", new { @id = Model.IssueId }, new { @class = "btn btn-default" })
             </div>
         </div>
-    </div>
 }
 
