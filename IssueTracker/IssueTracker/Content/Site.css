@@ -39,3 +39,7 @@ textarea {
     background-color: #f9f2f4;
     border-radius: 4px;
 }
+
+.btn-width-xs{
+    width:50px;
+}
