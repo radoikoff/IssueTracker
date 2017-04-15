@@ -22,7 +22,7 @@ namespace IssueTracker.Controllers
         {
             List<Issue> dbIssues = null;
             string filterMsg = null;
-            
+
             using (var db = new AppDbContext())
             {
                 if (stateId == null && tagId == null && searchStr == null)
@@ -188,6 +188,7 @@ namespace IssueTracker.Controllers
                 model.Title = issue.Title;
                 model.Description = issue.Description;
                 model.AssignedTags = GetIssueTags(issue, db);
+                model.DropdownListItems = GetDropdownListForAssignees(db, issue.AssigneeId);
 
                 return View(model);
             }
@@ -206,11 +207,12 @@ namespace IssueTracker.Controllers
                     issue.Title = model.Title;
                     issue.Description = model.Description;
                     SetIssueTags(issue, db, model);
+                    issue.AssigneeId = model.AssigneeId;
 
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
-                    return RedirectToAction("List");
+                    return RedirectToAction("Details", new { id = model.Id });
                 }
             }
             return View(model);
@@ -396,6 +398,22 @@ namespace IssueTracker.Controllers
                 assignedTags.Add(assignedTag);
             }
             return assignedTags;
+        }
+
+        private List<SelectListItem> GetDropdownListForAssignees(AppDbContext db, string assigneeUserId)
+        {
+            var dropdownListItems = new List<SelectListItem>();
+
+            foreach (var user in db.Users)
+            {
+                var currentListItem = new SelectListItem { Value = user.Id, Text = user.FullName };
+                if (user.Id.Equals(assigneeUserId))
+                {
+                    currentListItem.Selected = true;
+                }
+                dropdownListItems.Add(currentListItem);
+            }
+            return dropdownListItems;
         }
     }
 }

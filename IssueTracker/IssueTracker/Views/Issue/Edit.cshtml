@@ -15,13 +15,20 @@
         </div>
     </div>
 
-        <div class="form-group">
-            @Html.LabelFor(m => m.Description, new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.TextAreaFor(m => m.Description, new { @class = "form-control", @rows = 4 })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-            </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Description, new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", @rows = 4 })
+            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
         </div>
+    </div>
+
+    <div class="form-group">
+        @Html.Label("Assigned Person", new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.DropDownListFor(m => m.AssigneeId, Model.DropdownListItems, "None", new { @class = "form-control" })
+        </div>
+    </div>
 
         <div class="form-group">
             <div class="control-label col-md-2">
@@ -38,11 +45,12 @@
                 }
             </div>
         </div>
+        
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Save Changes" class="btn btn-primary" />
-                @Html.ActionLink("Back to list", "List", "Issue", null, new { @class = "btn btn-default" })
+                @Html.ActionLink("Back to Details", "Details", "Issue", new { @id = Model.Id }, new { @class = "btn btn-default" })
             </div>
         </div>
 }

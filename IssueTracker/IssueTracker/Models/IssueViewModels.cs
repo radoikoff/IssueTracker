@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace IssueTracker.Models
 {
@@ -58,10 +59,11 @@ namespace IssueTracker.Models
     public class CreateIssueViewModel
     {
         [Required]
-        [MinLength(3)]
+        [StringLength(250, MinimumLength = 3)]
         public string Title { get; set; }
 
         [Required]
+        [StringLength(2000, MinimumLength = 3)]
         public string Description { get; set; }
 
         public List<AssignedTag> AssignedTags { get; set; }
@@ -73,13 +75,18 @@ namespace IssueTracker.Models
         public int Id { get; set; }
 
         [Required]
-        [MinLength(3)]
+        [StringLength(250, MinimumLength = 3)]
         public string Title { get; set; }
 
         [Required]
+        [StringLength(2000, MinimumLength = 3)]
         public string Description { get; set; }
 
         public List<AssignedTag> AssignedTags { get; set; }
+
+        public string AssigneeId { get; set; }
+
+        public List<SelectListItem> DropdownListItems { get; set; }
     }
 
     public class AssignedTag

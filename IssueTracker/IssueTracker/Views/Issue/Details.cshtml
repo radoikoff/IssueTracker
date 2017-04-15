@@ -10,14 +10,27 @@
 
         <div class="row">
             <div class="col-md-1">
-                @Html.ActionLink(@Model.State.State, "List", "Issue", null, new { @class = "btn btn-success" })
+                @Html.ActionLink(@Model.State.State, "List", "Issue", new { @StateId = @Model.State.Id }, new { @class = "btn btn-success" })
             </div>
-            <div class="col-md-7">
+            <div class="col-md-6">
                 <h3 class="h3-special">@Model.Title<span style="color:lightgrey"> #@Model.Id</span></h3>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <div class="pull-right">
+                    @*<div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                            Example
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">HTML</a></li>
+                            <li><a href="#">CSS</a></li>
+                            <li><a href="#">JavaScript</a></li>
+                        </ul>
+                    </div>*@
+
+                    @Html.ActionLink("Back", "Index", "Issue", null, new { @class = "btn btn-default" })
                     @if (User.IsInRole("Admin") || User.IsInRole("Reviewer") || Model.Author.UserName.Equals(User.Identity.Name))
                     {
                         @Html.ActionLink("Progress this Issue", "Progress", "Issue", new { @id = Model.Id }, new { @class = "btn btn-primary" })
@@ -35,14 +48,14 @@
                 <strong>@Model.Author.FullName</strong><span> opened this issue on </span>@Model.SubmissionDate
                 @foreach (var tag in Model.Tags)
                 {
-                    <span>@Html.ActionLink(tag.Name, "ListByTag", "Issue", new { @id = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
+                    <span>@Html.ActionLink(tag.Name, "List", "Issue", new { @TagId = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
                 }
 
                 @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
                 {
                     <div class="btn-group pull-right">
-                        @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs" })
-                        @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs" })
+                        @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs btn-width-xs" })
+                        @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs" })
                     </div>
                 }
             </div>
@@ -63,8 +76,8 @@
                         @if (User.IsInRole("Admin") || comment.Author.UserName.Equals(User.Identity.Name))
                         {
                             <div class="btn-group pull-right">
-                                @Html.ActionLink("Edit", "Edit", "Comment", new { @id = comment.Id }, new { @class = "btn btn-success btn-xs" })
-                                @Html.ActionLink("Delete", "Delete", "Comment", new { @id = comment.Id }, new { @class = "btn btn-danger btn-xs" })
+                                @Html.ActionLink("Edit", "Edit", "Comment", new { @id = comment.Id }, new { @class = "btn btn-success btn-xs btn-width-xs" })
+                                @Html.ActionLink("Delete", "Delete", "Comment", new { @id = comment.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs" })
                             </div>
                         }
                     </div>

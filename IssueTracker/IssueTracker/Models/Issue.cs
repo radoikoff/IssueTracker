@@ -27,16 +27,22 @@ namespace IssueTracker.Models
         public virtual IssueState State { get; set; }
 
         [Required]
-        [MinLength(3)]
+        [StringLength(250, MinimumLength = 3)]
         public string Title { get; set; }
 
         [Required]
+        [StringLength(2000, MinimumLength = 3)]
         public string Description { get; set; }
 
         [ForeignKey("Author")]
         public string AuthorId { get; set; }
 
         public virtual ApplicationUser Author { get; set; }
+
+        [ForeignKey("Assignee")]
+        public string AssigneeId { get; set; }
+
+        public virtual ApplicationUser Assignee { get; set; }
 
         [Required]
         public DateTime SubmissionDate { get; set; }
