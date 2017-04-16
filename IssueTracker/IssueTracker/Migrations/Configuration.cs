@@ -20,28 +20,40 @@ namespace IssueTracker.Migrations
         {
             if (!context.IssueStates.Any())
             {
-                context.IssueStates.Add(new IssueState { State = "New"});
-                context.IssueStates.Add(new IssueState { State = "Open"});
-                context.IssueStates.Add(new IssueState { State = "Fixed"});
-                context.IssueStates.Add(new IssueState { State = "Closed"});
+                context.IssueStates.Add(new IssueState { State = "New" });
+                context.IssueStates.Add(new IssueState { State = "Open" });
+                context.IssueStates.Add(new IssueState { State = "Fixed" });
+                context.IssueStates.Add(new IssueState { State = "Closed" });
                 context.SaveChanges();
             }
 
             if (!context.Roles.Any())
             {
                 this.CreateRole("Admin", context);
-                this.CreateRole("Reviewer", context);
+                this.CreateRole("Owner", context);
                 this.CreateRole("EndUser", context);
             }
 
             if (!context.Users.Any())
             {
-                this.CreateUser("admin@gmail.com", "Admin", "123", context);
-                this.SetUserRole("admin@gmail.com", "Admin", context);
+                this.CreateUser("admin@gmail.com", "Admin Adminov", "123", context);
+                this.SetUserRoles("admin@gmail.com", new string[] { "Admin", "EndUser" }, context);
 
                 this.CreateUser("vasko@gmail.com", "Vasil Radoykov", "1", context);
-                this.SetUserRole("vasko@gmail.com", "Reviewer", context);
-                this.SetUserRole("vasko@gmail.com", "EndUser", context);
+                this.SetUserRoles("vasko@gmail.com", new string[] { "Owner", "EndUser" }, context);
+
+                this.CreateUser("pesho@gmail.com", "Pesho Goshov", "1", context);
+                this.SetUserRoles("pesho@gmail.com", new string[] { "EndUser" }, context);
+            }
+
+            if (!context.Tags.Any())
+            {
+                context.Tags.Add(new Tag { Name = "Bug" });
+                context.Tags.Add(new Tag { Name = "Enhancement" });
+                context.Tags.Add(new Tag { Name = "Duplicate" });
+                context.Tags.Add(new Tag { Name = "Not a Bug" });
+                context.Tags.Add(new Tag { Name = "Wontfix" });
+                context.SaveChanges();
             }
         }
 
@@ -57,13 +69,13 @@ namespace IssueTracker.Migrations
             }
         }
 
-        private void SetUserRole(string email, string role, AppDbContext context)
+        private void SetUserRoles(string email, string[] roles, AppDbContext context)
         {
             var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
 
             var userId = context.Users.FirstOrDefault(u => u.Email.Equals(email)).Id;
 
-            var result = userManager.AddToRole(userId, role);
+            var result = userManager.AddToRoles(userId, roles);
 
             if (!result.Succeeded)
             {
