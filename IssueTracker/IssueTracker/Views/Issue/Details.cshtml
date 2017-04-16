@@ -18,18 +18,6 @@
 
             <div class="col-md-5">
                 <div class="pull-right">
-                    @*<div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
-                            Example
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">HTML</a></li>
-                            <li><a href="#">CSS</a></li>
-                            <li><a href="#">JavaScript</a></li>
-                        </ul>
-                    </div>*@
-
                     @Html.ActionLink("Back", "Index", "Issue", null, new { @class = "btn btn-default" })
                     @if (User.IsInRole("Admin") || User.IsInRole("Reviewer") || Model.Author.UserName.Equals(User.Identity.Name))
                     {
@@ -44,19 +32,21 @@
 
         <div class="panel panel-primary">
             <div class="panel-heading">
-
                 <strong>@Model.Author.FullName</strong><span> opened this issue on </span>@Model.SubmissionDate
                 @foreach (var tag in Model.Tags)
                 {
                     <span>@Html.ActionLink(tag.Name, "List", "Issue", new { @TagId = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
                 }
-
                 @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
                 {
-                    <div class="btn-group pull-right">
+                    <div class="btn-group pull-right top">
                         @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs btn-width-xs" })
                         @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs" })
                     </div>
+                }
+                @if (@Model.AssigneeId != null)
+                {
+                    <div>Assignee: <strong>@Model.Assignee.FullName</strong></div>
                 }
             </div>
             <div class="panel-body">
