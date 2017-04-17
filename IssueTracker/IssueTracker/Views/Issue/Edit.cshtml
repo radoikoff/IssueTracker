@@ -30,27 +30,24 @@
         </div>
     </div>
 
-        <div class="form-group">
-            <div class="control-label col-md-2">
-                <strong>Tags</strong>
-            </div>
-            <div class="col-md-10">
-                @for (int i = 0; i < Model.AssignedTags.Count; i++)
-                {
-                    <div>
-                        @Html.HiddenFor(m => m.AssignedTags[i].Id)
-                        @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
-                        @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
-                    </div>
-                }
-            </div>
+    <div class="form-group">
+        @Html.Label("Tags", new { @class = "control-label col-md-2" })
+        <div class="col-md-2 well-custom">
+            @for (int i = 0; i < Model.AssignedTags.Count; i++)
+            {
+                <div>
+                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
+                    @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
+                    @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
+                </div>
+            }
         </div>
-        
+    </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save Changes" class="btn btn-primary" />
-                @Html.ActionLink("Back to Details", "Details", "Issue", new { @id = Model.Id }, new { @class = "btn btn-default" })
-            </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save Changes" class="btn btn-primary" />
+            @Html.ActionLink("Back to Details", "Details", "Issue", new { @id = Model.Id }, new { @class = "btn btn-default" })
         </div>
+    </div>
 }

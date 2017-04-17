@@ -20,7 +20,8 @@
 input,
 select,
 textarea {
-    max-width: 280px;
+    max-width: 400px;
+    /*max-width: 280px;*/
 }
 /*custom styling*/
 .h3-special{
@@ -42,4 +43,16 @@ textarea {
 
 .btn-width-xs{
     width:50px;
+}
+
+.well-custom{
+  min-height: 20px;
+  padding: 6px;
+  margin-left: 15px;
+  margin-right: 15px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  vertical-align: middle;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075)
 }
