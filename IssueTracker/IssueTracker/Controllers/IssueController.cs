@@ -30,6 +30,7 @@ namespace IssueTracker.Controllers
                     dbIssues = db.Issues
                             .Include(i => i.Author)
                             .Include(i => i.State)
+                            .Include(i => i.Assignee)
                             .Include(i => i.Tags).ToList();
                 }
                 else if (stateId != null && stateId >= 1 && stateId <= db.IssueStates.Count())
@@ -64,6 +65,10 @@ namespace IssueTracker.Controllers
                     issue.Title = dbIssue.Title;
                     issue.SubmissionDate = dbIssue.SubmissionDate;
                     issue.StateName = dbIssue.State.State;
+                    if (dbIssue.Assignee != null)
+                    {
+                        issue.AssigneeName = dbIssue.Assignee.FullName;
+                    }
                     issue.CommentsCount = dbIssue.Comments.Count();
                     issue.Tags = dbIssue.Tags.ToList();
 
