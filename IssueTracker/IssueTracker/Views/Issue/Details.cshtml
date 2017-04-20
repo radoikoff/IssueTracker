@@ -19,7 +19,7 @@
             <div class="col-md-5">
                 <div class="pull-right">
                     @Html.ActionLink("Back", "Index", "Issue", null, new { @class = "btn btn-default" })
-                    @if (User.IsInRole("Admin") || User.IsInRole("Reviewer") || Model.Author.UserName.Equals(User.Identity.Name))
+                    @if (User.IsInRole("Admin") || (User.IsInRole("Owner") && (Model.State.State.Equals("New") || Model.State.State.Equals("Open"))))
                     {
                         @Html.ActionLink("Progress this Issue", "Progress", "Issue", new { @id = Model.Id }, new { @class = "btn btn-primary" })
                     }

@@ -178,14 +178,14 @@ namespace IssueTracker.Controllers
             {
                 var issue = db.Issues.FirstOrDefault(i => i.Id == id);
 
-                if (!this.IsUserAutorized(issue))
-                {
-                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-                }
-
                 if (issue == null)
                 {
                     return HttpNotFound();
+                }
+
+                if (!this.IsUserAutorized(issue))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
                 }
 
                 var model = new EditIssueViewModel();
@@ -288,11 +288,6 @@ namespace IssueTracker.Controllers
             {
                 var issue = db.Issues.FirstOrDefault(i => i.Id == id);
 
-                if (!this.IsUserAutorized(issue))
-                {
-                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-                }
-
                 if (issue == null)
                 {
                     return HttpNotFound();
@@ -300,37 +295,95 @@ namespace IssueTracker.Controllers
 
                 var model = new ProgressIssueViewModel();
 
-                model.IssueId = (int)id;
+                model.IssueId = issue.Id;
                 model.IssueStateId = issue.StateId;
-                model.IssueStates = db.IssueStates.ToList();
+                model.IssueStateName = issue.State.State;
+                model.IssueTitle = issue.Title;
+                model.AllowedIssueStates = new List<AllowedIssueState>();
+                model.AssignedTags = GetIssueTags(issue, db);
+                model.AssigneeId = issue.AssigneeId;
+                model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
+
+                if (User.IsInRole("Admin"))
+                {
+                    foreach (var state in db.IssueStates)
+                    {
+                        model.AllowedIssueStates.Add(new AllowedIssueState
+                        {
+                            Id = state.Id,
+                            Name = state.State
+                        });
+                    }
+                    return View(model);
+                }
+
+                if (issue.State.State.Equals("New") && User.IsInRole("Owner"))
+                {
+                    IssueState state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Open"));
+                    model.AllowedIssueStates.Add(new AllowedIssueState
+                    {
+                        Id = state.Id,
+                        Name = state.State,
+                        HintText = "Accept the issue (goes to Open state)"
+                    });
+
+                    state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
+                    model.AllowedIssueStates.Add(new AllowedIssueState
+                    {
+                        Id = state.Id,
+                        Name = state.State,
+                        HintText = "Reject the issue (goes to Closed state)"
+                    });
+                    return View(model);
+                }
+
+                if (issue.State.State.Equals("Open") && (User.IsInRole("Owner") || issue.Assignee.UserName.Equals(User.Identity.Name)))
+                {
+                    var state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Fixed"));
+                    model.AllowedIssueStates.Add(new AllowedIssueState
+                    {
+                        Id = state.Id,
+                        Name = state.State,
+                        HintText = "Confirm issue has been fixed (goes to Fixed state)"
+                    });
+
+                    state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
+                    model.AllowedIssueStates.Add(new AllowedIssueState
+                    {
+                        Id = state.Id,
+                        Name = state.State,
+                        HintText = "Issue will not be fixed (goes to Closed state)"
+                    });
+                    return View(model);
+                }
 
                 return View(model);
             }
         }
 
+        //post Progress
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Progress")]
         public ActionResult ProgressConfirmed(ProgressIssueViewModel model)
         {
-            if (ModelState.IsValid)
+            using (var db = new AppDbContext())
             {
-                using (var db = new AppDbContext())
+                if (ModelState.IsValid)
                 {
-                    //update issue state
                     var issue = db.Issues.FirstOrDefault(i => i.Id == model.IssueId);
-                    issue.StateId = model.IssueStateId;
+                    issue.StateId = (int)model.IssueStateId;
+                    issue.AssigneeId = model.AssigneeId;
+                    SetIssueTags(issue, db, model);
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
                     CreateInternalComment(model.IssueId, db);
 
-                    model.IssueStates = db.IssueStates.ToList(); //in case Model State is not valid
-
                     return RedirectToAction("Details", "Issue", new { id = issue.Id });
                 }
+                return View(model);
             }
-            return View(model);
         }
 
         private void CreateInternalComment(int issueId, AppDbContext db)
@@ -369,6 +422,19 @@ namespace IssueTracker.Controllers
         }
 
         private void SetIssueTags(Issue issue, AppDbContext db, EditIssueViewModel model)
+        {
+            issue.Tags.Clear();
+            foreach (var tag in model.AssignedTags)
+            {
+                if (tag.IsSelected)
+                {
+                    Tag dbTag = db.Tags.FirstOrDefault(t => t.Id == tag.Id);
+                    issue.Tags.Add(dbTag);
+                }
+            }
+        }
+
+        private void SetIssueTags(Issue issue, AppDbContext db, ProgressIssueViewModel model)
         {
             issue.Tags.Clear();
             foreach (var tag in model.AssignedTags)

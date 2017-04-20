@@ -294,6 +294,7 @@
     <Content Include="Views\Tag\Delete.cshtml" />
     <Content Include="Views\Tag\Edit.cshtml" />
     <Content Include="Views\Tag\List.cshtml" />
+    <Content Include="Views\Issue\_ProgressPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -2,43 +2,71 @@
 
 <h3>Progress Issue <span>#@Model.IssueId</span></h3>
 <hr />
+
 @using (Html.BeginForm("Progress", "Issue", FormMethod.Post, new { @class = "form-horizontal" }))
 {
     @Html.AntiForgeryToken()
 
     @Html.HiddenFor(m => m.IssueId)
-    
+    @Html.HiddenFor(m => m.IssueStateName)
+    @Html.HiddenFor(m => m.AssigneeId)
+    @Html.HiddenFor(m => m.IssueTitle)
+
+    for (int i = 0; i < Model.AllowedIssueStates.Count; i++)
+    {
+        @Html.HiddenFor(m => m.AllowedIssueStates[i].HintText)
+        @Html.HiddenFor(m => m.AllowedIssueStates[i].Id)
+        @Html.HiddenFor(m => m.AllowedIssueStates[i].Name)
+    }
+    for (int i = 0; i < Model.AssigneesDropdownList.Count; i++)
+    {
+        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Selected)
+        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Text)
+        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Value)
+    }
+    for (int i = 0; i < Model.AssignedTags.Count; i++)
+    {
+        @Html.HiddenFor(m => m.AssignedTags[i].Id)
+        @Html.HiddenFor(m => m.AssignedTags[i].IsSelected)
+        @Html.HiddenFor(m => m.AssignedTags[i].Name)
+    }
+
     <div class="form-group">
-        <div class="control-label col-md-2">
-            <strong>Issue States</strong>
-        </div>
+        @Html.LabelFor(m => m.AllowedIssueStates.First().Name, new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            @foreach (var state in Model.IssueStates)
-                {
-                    if (state.Id >= Model.IssueStateId)
-                    {
-                    <div>
-                        @Html.RadioButtonFor(m => m.IssueStateId, state.Id, new { @id = @state.Id })
-                        @Html.Label(state.State, new { @for = @state.Id, })
-                    </div>
-                }
-                else
-                {
-                    <div>
-                        @Html.RadioButtonFor(m => m.IssueStateId, state.Id, new { @id = @state.Id, @disabled = "disabled" })
-                        @Html.Label(state.State, new { @style = "color:lightgray" })
-                    </div>
-                }
+            <span class="label label-default">@Model.IssueStateName</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.IssueTitle, new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            <p class="form-control-static">@Model.IssueTitle</p>
+        </div>
+    </div>
+
+    @Html.Partial("_ProgressPartial")
+
+
+    <div class="form-group">
+        @Html.Label("Tags", new { @class = "control-label col-md-2" })
+        <div class="col-md-2 well-custom">
+            @for (int i = 0; i < Model.AssignedTags.Count; i++)
+            {
+                <div>
+                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
+                    @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
+                    @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
+                </div>
             }
         </div>
     </div>
 
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Progress" class="btn btn-primary" />
-                @Html.ActionLink("Back to details", "Details", "Issue", new { @id = Model.IssueId }, new { @class = "btn btn-default" })
-            </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Progress" class="btn btn-primary" />
+            @Html.ActionLink("Back to details", "Details", "Issue", new { @id = Model.IssueId }, new { @class = "btn btn-default" })
         </div>
+    </div>
 }
 

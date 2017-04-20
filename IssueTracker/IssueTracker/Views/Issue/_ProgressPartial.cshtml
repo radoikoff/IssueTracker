@@ -1,0 +1,29 @@
+﻿@model IssueTracker.Models.ProgressIssueViewModel
+
+<div class="form-group">
+    <div class="control-label col-md-2">
+        <strong>Action</strong>
+    </div>
+    <div class="col-md-10">
+
+        @foreach (var state in Model.AllowedIssueStates)
+            {
+            <div>
+                @Html.RadioButtonFor(m => m.IssueStateId, state.Id, new { @id = @state.Id })
+                @Html.Label(state.HintText, new { @for = @state.Id, })
+            </div>
+        }
+        @Html.ValidationMessageFor(m => m.IssueStateId, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+@if (Model.IssueStateName.Equals("Open") || Model.IssueStateName.Equals("New"))
+{
+    <div class="form-group">
+        @Html.LabelFor(m => m.AssigneeId, new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.DropDownListFor(m => m.AssigneeId, Model.AssigneesDropdownList, "None", new { @class = "form-control" })
+        </div>
+    </div>
+}
+

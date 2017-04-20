@@ -51,11 +51,34 @@ namespace IssueTracker.Models
 
     public class ProgressIssueViewModel
     {
+        //public Issue Issue { get; set; }
+        
         public int IssueId { get; set; }
 
-        public int IssueStateId { get; set; }
+        [Required(ErrorMessage = "Please select an action")]
+        public int? IssueStateId { get; set; }
 
-        public List<IssueState> IssueStates { get; set; }
+        public string IssueStateName { get; set; }
+
+        public string IssueTitle { get; set; }
+
+        public List<AllowedIssueState> AllowedIssueStates { get; set; }
+
+        public List<AssignedTag> AssignedTags { get; set; }
+
+        [Display(Name = "Assign a person")]
+        public string AssigneeId { get; set; }
+
+        public List<SelectListItem> AssigneesDropdownList { get; set; }
+    }
+
+    public class AllowedIssueState
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string HintText { get; set; }
     }
 
     public class CreateIssueViewModel
