@@ -9,27 +9,7 @@
 
     @Html.HiddenFor(m => m.IssueId)
     @Html.HiddenFor(m => m.IssueStateName)
-    @Html.HiddenFor(m => m.AssigneeId)
     @Html.HiddenFor(m => m.IssueTitle)
-
-    for (int i = 0; i < Model.AllowedIssueStates.Count; i++)
-    {
-        @Html.HiddenFor(m => m.AllowedIssueStates[i].HintText)
-        @Html.HiddenFor(m => m.AllowedIssueStates[i].Id)
-        @Html.HiddenFor(m => m.AllowedIssueStates[i].Name)
-    }
-    for (int i = 0; i < Model.AssigneesDropdownList.Count; i++)
-    {
-        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Selected)
-        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Text)
-        @Html.HiddenFor(m => m.AssigneesDropdownList[i].Value)
-    }
-    for (int i = 0; i < Model.AssignedTags.Count; i++)
-    {
-        @Html.HiddenFor(m => m.AssignedTags[i].Id)
-        @Html.HiddenFor(m => m.AssignedTags[i].IsSelected)
-        @Html.HiddenFor(m => m.AssignedTags[i].Name)
-    }
 
     <div class="form-group">
         @Html.LabelFor(m => m.AllowedIssueStates.First().Name, new { @class = "control-label col-md-2" })
@@ -54,9 +34,10 @@
             @for (int i = 0; i < Model.AssignedTags.Count; i++)
             {
                 <div>
-                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
                     @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
                     @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
+                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
+                    @Html.HiddenFor(m => m.AssignedTags[i].Name)
                 </div>
             }
         </div>

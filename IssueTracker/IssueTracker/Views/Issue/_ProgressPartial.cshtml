@@ -17,7 +17,7 @@
     </div>
 </div>
 
-@if (Model.IssueStateName.Equals("Open") || Model.IssueStateName.Equals("New"))
+@if (Model.IssueStateName.Equals("Open") || Model.IssueStateName.Equals("New") || User.IsInRole("Admin"))
 {
     <div class="form-group">
         @Html.LabelFor(m => m.AssigneeId, new { @class = "control-label col-md-2" })

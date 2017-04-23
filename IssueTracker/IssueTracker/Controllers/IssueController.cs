@@ -299,64 +299,11 @@ namespace IssueTracker.Controllers
                 model.IssueStateId = issue.StateId;
                 model.IssueStateName = issue.State.State;
                 model.IssueTitle = issue.Title;
-                model.AllowedIssueStates = new List<AllowedIssueState>();
+                model.AllowedIssueStates = SetAllowedStates(issue, db);
                 model.AssignedTags = GetIssueTags(issue, db);
                 model.AssigneeId = issue.AssigneeId;
                 model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
-
-                if (User.IsInRole("Admin"))
-                {
-                    foreach (var state in db.IssueStates)
-                    {
-                        model.AllowedIssueStates.Add(new AllowedIssueState
-                        {
-                            Id = state.Id,
-                            Name = state.State
-                        });
-                    }
-                    return View(model);
-                }
-
-                if (issue.State.State.Equals("New") && User.IsInRole("Owner"))
-                {
-                    IssueState state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Open"));
-                    model.AllowedIssueStates.Add(new AllowedIssueState
-                    {
-                        Id = state.Id,
-                        Name = state.State,
-                        HintText = "Accept the issue (goes to Open state)"
-                    });
-
-                    state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
-                    model.AllowedIssueStates.Add(new AllowedIssueState
-                    {
-                        Id = state.Id,
-                        Name = state.State,
-                        HintText = "Reject the issue (goes to Closed state)"
-                    });
-                    return View(model);
-                }
-
-                if (issue.State.State.Equals("Open") && (User.IsInRole("Owner") || issue.Assignee.UserName.Equals(User.Identity.Name)))
-                {
-                    var state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Fixed"));
-                    model.AllowedIssueStates.Add(new AllowedIssueState
-                    {
-                        Id = state.Id,
-                        Name = state.State,
-                        HintText = "Confirm issue has been fixed (goes to Fixed state)"
-                    });
-
-                    state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
-                    model.AllowedIssueStates.Add(new AllowedIssueState
-                    {
-                        Id = state.Id,
-                        Name = state.State,
-                        HintText = "Issue will not be fixed (goes to Closed state)"
-                    });
-                    return View(model);
-                }
-
+                   
                 return View(model);
             }
         }
@@ -369,24 +316,33 @@ namespace IssueTracker.Controllers
         {
             using (var db = new AppDbContext())
             {
+                var issue = db.Issues.FirstOrDefault(i => i.Id == model.IssueId);
                 if (ModelState.IsValid)
-                {
-                    var issue = db.Issues.FirstOrDefault(i => i.Id == model.IssueId);
+                { 
                     issue.StateId = (int)model.IssueStateId;
                     issue.AssigneeId = model.AssigneeId;
                     SetIssueTags(issue, db, model);
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
-                    CreateInternalComment(model.IssueId, db);
+                    CreateInternalComment(model.IssueId, issue.State.State, db);
 
                     return RedirectToAction("Details", "Issue", new { id = issue.Id });
                 }
+
+                model.AllowedIssueStates = SetAllowedStates(issue, db);
+                model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
+                if (model.AssigneeId != null) //clear default selected user and assing the user returend from the post
+                {
+                    model.AssigneesDropdownList.FirstOrDefault(s => s.Selected = true).Selected = false;
+                    model.AssigneesDropdownList.FirstOrDefault(s => s.Value.Equals(model.AssigneeId)).Selected = true;
+                }
+
                 return View(model);
             }
         }
 
-        private void CreateInternalComment(int issueId, AppDbContext db)
+        private void CreateInternalComment(int issueId, string stateName, AppDbContext db)
         {
             var comment = new Comment();
             var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(User.Identity.Name));
@@ -395,7 +351,7 @@ namespace IssueTracker.Controllers
             comment.AuthorId = currentUser.Id;
             comment.CreatedDate = DateTime.Now;
             comment.IsInternal = true;
-            comment.Text = "Internal";
+            comment.Text = stateName;
 
             db.Comments.Add(comment);
             db.SaveChanges();
@@ -485,6 +441,66 @@ namespace IssueTracker.Controllers
                 dropdownListItems.Add(currentListItem);
             }
             return dropdownListItems;
+        }
+
+        private List<AllowedIssueState> SetAllowedStates(Issue issue, AppDbContext db)
+        {
+            var allowedStates = new List<AllowedIssueState>();
+
+            if (User.IsInRole("Admin"))
+            {
+                foreach (var state in db.IssueStates)
+                {
+                    allowedStates.Add(new AllowedIssueState
+                    {
+                        Id = state.Id,
+                        Name = state.State,
+                        HintText = state.State
+                    });
+                }
+                return allowedStates;
+            }
+
+            if (issue.State.State.Equals("New") && User.IsInRole("Owner"))
+            {
+                IssueState state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Open"));
+                allowedStates.Add(new AllowedIssueState
+                {
+                    Id = state.Id,
+                    Name = state.State,
+                    HintText = "Accept the issue (goes to Open state)"
+                });
+
+                state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
+                allowedStates.Add(new AllowedIssueState
+                {
+                    Id = state.Id,
+                    Name = state.State,
+                    HintText = "Reject the issue (goes to Closed state)"
+                });
+                return allowedStates;
+            }
+
+            if (issue.State.State.Equals("Open") && (User.IsInRole("Owner") || issue.Assignee.UserName.Equals(User.Identity.Name)))
+            {
+                var state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Fixed"));
+                allowedStates.Add(new AllowedIssueState
+                {
+                    Id = state.Id,
+                    Name = state.State,
+                    HintText = "Confirm issue has been fixed (goes to Fixed state)"
+                });
+
+                state = db.IssueStates.FirstOrDefault(s => s.State.Equals("Closed"));
+                allowedStates.Add(new AllowedIssueState
+                {
+                    Id = state.Id,
+                    Name = state.State,
+                    HintText = "Issue will not be fixed (goes to Closed state)"
+                });
+                return allowedStates;
+            }
+            return allowedStates;
         }
     }
 }
