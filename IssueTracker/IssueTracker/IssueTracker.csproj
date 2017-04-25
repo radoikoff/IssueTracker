@@ -211,6 +211,7 @@
     <Compile Include="Models\ApplicationUser.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\Issue.cs" />
+    <Compile Include="Models\IssueChange.cs" />
     <Compile Include="Models\IssueState.cs" />
     <Compile Include="Models\IssueViewModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />

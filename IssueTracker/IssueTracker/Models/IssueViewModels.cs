@@ -111,7 +111,11 @@ namespace IssueTracker.Models
 
         public string AssigneeId { get; set; }
 
-        public List<SelectListItem> DropdownListItems { get; set; }
+        public List<SelectListItem> AssigneesDropdownList { get; set; }
+
+        public bool HasEditRights { get; set; }
+
+        public bool HasProgressRights { get; set; }
     }
 
     public class AssignedTag

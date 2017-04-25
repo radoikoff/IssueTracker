@@ -37,11 +37,18 @@
                 {
                     <span>@Html.ActionLink(tag.Name, "List", "Issue", new { @TagId = tag.Id }, new { @class = "btn btn-warning btn-xs" })</span>
                 }
-                @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
+                @if (User.IsInRole("Admin") || User.IsInRole("Owner") || Model.Author.UserName.Equals(User.Identity.Name))
                 {
                     <div class="btn-group pull-right top">
                         @Html.ActionLink("Edit", "Edit", "Issue", new { @id = Model.Id }, new { @class = "btn btn-success btn-xs btn-width-xs" })
-                        @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs" })
+                        @if (User.IsInRole("Admin") || Model.Author.UserName.Equals(User.Identity.Name))
+                        {
+                            @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Delete", "Delete", "Issue", new { @id = Model.Id }, new { @class = "btn btn-danger btn-xs btn-width-xs", @disabled = "disabled" })
+                        }
                     </div>
                 }
                 @if (@Model.AssigneeId != null)
@@ -78,11 +85,12 @@
             }
             else
             {
-                <div class="panel panel-success">
+                <div class="panel panel-success" style="margin-left: 30px">
                     <div class="panel-heading">
-                        <strong>@comment.Author.FullName</strong><span> moved this issue in </span><strong>@comment.Text</strong><span> state on </span>@comment.CreatedDate
+                        <strong>@comment.Author.FullName</strong><span> moved this issue in </span><strong>@Model.Changes.First(c => c.Id == comment.ChangeId).State.State</strong><span> state on </span>@comment.CreatedDate
                     </div>
                 </div>
+
             }
         }
 

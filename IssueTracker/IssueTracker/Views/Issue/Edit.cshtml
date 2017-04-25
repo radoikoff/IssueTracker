@@ -6,11 +6,14 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.HasEditRights)
+    @Html.HiddenFor(m => m.HasProgressRights)
+
 
     <div class="form-group">
         @Html.LabelFor(m => m.Title, new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.Title, new { @class = "form-control" })
+            @Html.TextBoxFor(m => m.Title, Model.HasEditRights ? (object)new { @class = "form-control" } : new { @class = "form-control", @readonly = "readonly" } )
             @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
         </div>
     </div>
@@ -18,7 +21,7 @@
     <div class="form-group">
         @Html.LabelFor(m => m.Description, new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", @rows = 4 })
+            @Html.TextAreaFor(m => m.Description, Model.HasEditRights ? (object)new { @class = "form-control", @rows = 4 } : new { @class = "form-control", @rows = 4, @readonly = "readonly" })
             @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
         </div>
     </div>
@@ -26,7 +29,7 @@
     <div class="form-group">
         @Html.Label("Assigned Person", new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            @Html.DropDownListFor(m => m.AssigneeId, Model.DropdownListItems, "None", new { @class = "form-control" })
+            @Html.DropDownListFor(m => m.AssigneeId, Model.AssigneesDropdownList, "None", Model.HasProgressRights ? (object)new { @class = "form-control" } : new { @class = "form-control", @readonly = "readonly"})
         </div>
     </div>
 
@@ -36,9 +39,10 @@
             @for (int i = 0; i < Model.AssignedTags.Count; i++)
             {
                 <div>
-                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
                     @Html.CheckBoxFor(m => m.AssignedTags[i].IsSelected, new { @id = i })
                     @Html.Label(@Model.AssignedTags[i].Name, new { @for = i })
+                    @Html.HiddenFor(m => m.AssignedTags[i].Name)
+                    @Html.HiddenFor(m => m.AssignedTags[i].Id)
                 </div>
             }
         </div>

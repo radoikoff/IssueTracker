@@ -18,6 +18,8 @@ namespace IssueTracker.Models
 
         public virtual IDbSet<Tag> Tags { get; set; }
 
+        public virtual IDbSet<IssueChange> Changes { get; set; }
+
 
         public static AppDbContext Create()
         {

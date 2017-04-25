@@ -11,13 +11,13 @@ namespace IssueTracker.Controllers
 {
     public class IssueController : Controller
     {
-        // GET: Issue
+        //get Index
         public ActionResult Index()
         {
             return RedirectToAction("List");
         }
 
-        //Get List
+        //get List
         public ActionResult List(int? stateId, int? tagId, string searchStr)
         {
             List<Issue> dbIssues = null;
@@ -98,7 +98,7 @@ namespace IssueTracker.Controllers
             }
         }
 
-        //get details
+        //get Details
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -115,6 +115,7 @@ namespace IssueTracker.Controllers
                     .Include(i => i.Assignee)
                     .Include(i => i.Comments.Select(c => c.Author))
                     .Include(i => i.Tags)
+                    .Include(i => i.Changes.Select(c => c.State))
                     .First();
 
                 if (issue == null)
@@ -159,6 +160,8 @@ namespace IssueTracker.Controllers
 
                     db.Issues.Add(issue);
                     db.SaveChanges();
+
+                    AddNewChangeLogEntry(issue, db);
                 }
                 return RedirectToAction("List");
             }
@@ -183,7 +186,7 @@ namespace IssueTracker.Controllers
                     return HttpNotFound();
                 }
 
-                if (!this.IsUserAutorized(issue))
+                if (!(this.IsUserAutorized(issue) || User.IsInRole("Owner")))
                 {
                     return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
                 }
@@ -193,7 +196,8 @@ namespace IssueTracker.Controllers
                 model.Title = issue.Title;
                 model.Description = issue.Description;
                 model.AssignedTags = GetIssueTags(issue, db);
-                model.DropdownListItems = GetDropdownListForAssignees(db, issue.AssigneeId);
+                model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
+                SetViewRights(model, issue);
 
                 return View(model);
             }
@@ -204,11 +208,12 @@ namespace IssueTracker.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditIssueViewModel model)
         {
-            if (ModelState.IsValid)
+            using (var db = new AppDbContext())
             {
-                using (var db = new AppDbContext())
+                var issue = db.Issues.FirstOrDefault(i => i.Id == model.Id);
+
+                if (ModelState.IsValid)
                 {
-                    var issue = db.Issues.FirstOrDefault(i => i.Id == model.Id);
                     issue.Title = model.Title;
                     issue.Description = model.Description;
                     SetIssueTags(issue, db, model);
@@ -217,10 +222,19 @@ namespace IssueTracker.Controllers
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
+                    AddNewChangeLogEntry(issue, db);
+
                     return RedirectToAction("Details", new { id = model.Id });
                 }
+
+                model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
+                if (model.AssigneeId != null) //clear default selected user and assing the user returned from the post
+                {
+                    model.AssigneesDropdownList.FirstOrDefault(s => s.Selected = true).Selected = false;
+                    model.AssigneesDropdownList.FirstOrDefault(s => s.Value.Equals(model.AssigneeId)).Selected = true;
+                }
+                return View(model);
             }
-            return View(model);
         }
 
         //get Delete
@@ -303,7 +317,7 @@ namespace IssueTracker.Controllers
                 model.AssignedTags = GetIssueTags(issue, db);
                 model.AssigneeId = issue.AssigneeId;
                 model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
-                   
+
                 return View(model);
             }
         }
@@ -311,28 +325,28 @@ namespace IssueTracker.Controllers
         //post Progress
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ActionName("Progress")]
-        public ActionResult ProgressConfirmed(ProgressIssueViewModel model)
+        public ActionResult Progress(ProgressIssueViewModel model)
         {
             using (var db = new AppDbContext())
             {
                 var issue = db.Issues.FirstOrDefault(i => i.Id == model.IssueId);
                 if (ModelState.IsValid)
-                { 
+                {
                     issue.StateId = (int)model.IssueStateId;
                     issue.AssigneeId = model.AssigneeId;
                     SetIssueTags(issue, db, model);
                     db.Entry(issue).State = EntityState.Modified;
                     db.SaveChanges();
 
-                    CreateInternalComment(model.IssueId, issue.State.State, db);
+                    AddNewChangeLogEntry(issue, db);
+                    AddInternalComment(model.IssueId, db);
 
                     return RedirectToAction("Details", "Issue", new { id = issue.Id });
                 }
 
                 model.AllowedIssueStates = SetAllowedStates(issue, db);
                 model.AssigneesDropdownList = GetDropdownListForAssignees(db, issue.AssigneeId);
-                if (model.AssigneeId != null) //clear default selected user and assing the user returend from the post
+                if (model.AssigneeId != null) //clear default selected user and assing the user returned from the post
                 {
                     model.AssigneesDropdownList.FirstOrDefault(s => s.Selected = true).Selected = false;
                     model.AssigneesDropdownList.FirstOrDefault(s => s.Value.Equals(model.AssigneeId)).Selected = true;
@@ -342,16 +356,19 @@ namespace IssueTracker.Controllers
             }
         }
 
-        private void CreateInternalComment(int issueId, string stateName, AppDbContext db)
+
+        private void AddInternalComment(int issueId, AppDbContext db)
         {
             var comment = new Comment();
             var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(User.Identity.Name));
+            int latestChangeEntryId = db.Changes.Where(c => c.IssueId == issueId).OrderByDescending(c => c.ChangedAtDate).First().Id;
 
             comment.IssueId = issueId;
             comment.AuthorId = currentUser.Id;
             comment.CreatedDate = DateTime.Now;
             comment.IsInternal = true;
-            comment.Text = stateName;
+            comment.ChangeId = latestChangeEntryId;
+            comment.Text = "internal";
 
             db.Comments.Add(comment);
             db.SaveChanges();
@@ -363,6 +380,23 @@ namespace IssueTracker.Controllers
             bool isAdmin = User.IsInRole("Admin");
 
             return isAuthor || isAdmin;
+        }
+
+        private void SetViewRights(EditIssueViewModel model, Issue issue)
+        {
+            bool isAuthor = issue.Author.UserName.Equals(User.Identity.Name);
+            bool isAdmin = User.IsInRole("Admin");
+            bool isOwner = User.IsInRole("Owner");
+
+            if (isAuthor || isAdmin)
+            {
+                model.HasEditRights = true;
+            }
+
+            if (isOwner || isAdmin)
+            {
+                model.HasProgressRights = true;
+            }
         }
 
         private void SetIssueTags(Issue issue, AppDbContext db, CreateIssueViewModel model)
@@ -501,6 +535,15 @@ namespace IssueTracker.Controllers
                 return allowedStates;
             }
             return allowedStates;
+        }
+
+        private void AddNewChangeLogEntry(Issue issue, AppDbContext db)
+        {
+            var currentUser = db.Users.FirstOrDefault(u => u.UserName.Equals(User.Identity.Name));
+            var changeEntry = new IssueChange(issue.Id, issue.StateId, issue.Title, issue.Description, issue.AssigneeId, currentUser.Id, DateTime.Now);
+
+            db.Changes.Add(changeEntry);
+            db.SaveChanges();
         }
     }
 }

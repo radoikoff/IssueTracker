@@ -11,11 +11,13 @@ namespace IssueTracker.Models
     {
         private ICollection<Comment> comments;
         private ICollection<Tag> tags;
+        private ICollection<IssueChange> changes;
 
         public Issue()
         {
             comments = new HashSet<Comment>();
             tags = new HashSet<Tag>();
+            changes = new HashSet<IssueChange>();
         }
 
         [Key]
@@ -59,5 +61,10 @@ namespace IssueTracker.Models
             set { this.tags = value; }
         }
 
+        public virtual ICollection<IssueChange> Changes
+        {
+            get { return this.changes; }
+            set { this.changes = value; }
+        }
     }
 }

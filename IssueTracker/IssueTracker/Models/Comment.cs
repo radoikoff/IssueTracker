@@ -32,5 +32,7 @@ namespace IssueTracker.Models
 
         [Required]
         public bool IsInternal { get; set; }
+
+        public int? ChangeId { get; set; }
     }
 }
