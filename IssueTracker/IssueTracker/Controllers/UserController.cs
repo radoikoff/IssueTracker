@@ -40,8 +40,6 @@ namespace IssueTracker.Controllers
                     usersViewModel.Add(model);
                 }
 
-                ViewBag.Admins = GetAdmins(db);
-
                 return View(usersViewModel);
             }
         }
@@ -191,21 +189,5 @@ namespace IssueTracker.Controllers
             return userRoles;
         }
 
-        private List<string> GetAdmins(AppDbContext db) //hashset
-        {
-            var userManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-            var users = db.Users.ToList();
-
-            var admins = new List<string>(); //hashset
-            foreach (var user in users)
-            {
-                if (userManager.IsInRole(user.Id, "Admin"))
-                {
-                    admins.Add(user.Id);
-                }
-            }
-            return admins;
-        }
     }
 }
