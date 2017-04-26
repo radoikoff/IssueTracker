@@ -96,7 +96,7 @@
 
 
         <footer class="pull-right">
-            @Html.ActionLink("Open new Issue", "Create", "Issue", null, new { @class = "btn btn-default" })
+            @Html.ActionLink("History", "History", "Issue", new { @id = Model.Id}, new { @class = "btn btn-default" })
             @Html.ActionLink("Back to list", "Index", "Issue", null, new { @class = "btn btn-default" })
         </footer>
     </article>

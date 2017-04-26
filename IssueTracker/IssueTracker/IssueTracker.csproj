@@ -292,6 +292,7 @@
     <Content Include="Views\Tag\Edit.cshtml" />
     <Content Include="Views\Tag\List.cshtml" />
     <Content Include="Views\Issue\_ProgressPartial.cshtml" />
+    <Content Include="Views\Issue\History.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

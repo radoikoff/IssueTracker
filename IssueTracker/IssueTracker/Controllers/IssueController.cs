@@ -357,6 +357,32 @@ namespace IssueTracker.Controllers
         }
 
 
+        public ActionResult History(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var model = db.Changes.Where(c => c.IssueId == id)
+                                .Include(c=>c.ChangedBy)
+                                .Include(c=>c.Assignee)
+                                .Include(c=>c.State)
+                                .OrderByDescending(c => c.ChangedAtDate)
+                                .ToList();
+                //var changesWithoutAssignee = model.Where(m => m.AssigneeId == null).ToList();
+                //foreach (var change in changesWithoutAssignee)
+                //{
+                //    change.Assignee.FullName = "";
+                //}
+
+                return View(model);
+            }
+        }
+
+
         private void AddInternalComment(int issueId, AppDbContext db)
         {
             var comment = new Comment();
