@@ -66,14 +66,14 @@ namespace IssueTracker.Controllers
 
             var comment = db.Comments.FirstOrDefault(c => c.Id == id);
 
-            if (!this.IsUserAutorized(comment))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-            }
-
             if (comment == null)
             {
                 return HttpNotFound();
+            }
+
+            if (!this.IsUserAutorized(comment))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
 
             return View(comment);
@@ -106,14 +106,14 @@ namespace IssueTracker.Controllers
 
             var comment = db.Comments.FirstOrDefault(c => c.Id == id);
 
-            if (!this.IsUserAutorized(comment))
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-            }
-
             if (comment == null)
             {
                 return HttpNotFound();
+            }
+
+            if (!this.IsUserAutorized(comment))
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
 
             return View(comment);

@@ -116,7 +116,7 @@ namespace IssueTracker.Controllers
                     .Include(i => i.Comments.Select(c => c.Author))
                     .Include(i => i.Tags)
                     .Include(i => i.Changes.Select(c => c.State))
-                    .First();
+                    .FirstOrDefault();
 
                 if (issue == null)
                 {
@@ -250,15 +250,16 @@ namespace IssueTracker.Controllers
             {
                 var issue = db.Issues.Include(i => i.Tags).FirstOrDefault(i => i.Id == id);
 
-                if (!this.IsUserAutorized(issue))
-                {
-                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-                }
-
                 if (issue == null)
                 {
                     return HttpNotFound();
                 }
+
+                if (!this.IsUserAutorized(issue))
+                {
+                    return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                }
+                
                 return View(issue);
             }
         }
@@ -366,19 +367,19 @@ namespace IssueTracker.Controllers
 
             using (var db = new AppDbContext())
             {
-                var model = db.Changes.Where(c => c.IssueId == id)
+                var changes = db.Changes.Where(c => c.IssueId == id)
                                 .Include(c=>c.ChangedBy)
                                 .Include(c=>c.Assignee)
                                 .Include(c=>c.State)
                                 .OrderByDescending(c => c.ChangedAtDate)
                                 .ToList();
-                //var changesWithoutAssignee = model.Where(m => m.AssigneeId == null).ToList();
-                //foreach (var change in changesWithoutAssignee)
-                //{
-                //    change.Assignee.FullName = "";
-                //}
 
-                return View(model);
+                if (!changes.Any())
+                {
+                    return HttpNotFound();
+                }
+
+                return View(changes);
             }
         }
 
